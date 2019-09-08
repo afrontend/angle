@@ -35,13 +35,13 @@ function getDxDy(angle, speed) {
 function createCircle() {
   const type = 'circle';
   const id = 100;
-  const radius = getRandomArbitrary(5, 100);
+  // const radius = getRandomArbitrary(5, 100);
+  const radius = 20;
   const x = getRandomX(radius);
   const y = getRandomY(radius);
   const nextX = x;
   const nextY = y;
-  // const angle = getRandom(360);
-  const testAngle = getRandom(360);
+  const testAngle = 270;
   const angle = 0;
   const speed = Math.abs(radius-100)/16;
   const { dx, dy } = getDxDy(angle, speed);
@@ -74,6 +74,10 @@ function isCircle(obj) {
   return obj && obj.type === 'circle';
 }
 
+function isBall(obj) {
+  return obj && obj.type === 'ball';
+}
+
 function isInRange(value, range) {
   return value ? (value >= range.min && value <= range.max) : false;
 }
@@ -81,15 +85,15 @@ function isInRange(value, range) {
 function getNextTestAngle(angle, currentTestAngle) {
   if (angle === 0) {
     const nextTestAngle = currentTestAngle + 1;
-    if (nextTestAngle > 180) {
-      return 180;
+    if (nextTestAngle > 358) {
+      return 358;
     } else {
       return nextTestAngle;
     }
   } else {
     const nextTestAngle = currentTestAngle - 1;
-    if (nextTestAngle < 0) {
-      return 0;
+    if (nextTestAngle < 182) {
+      return 182;
     } else {
       return nextTestAngle;
     }
@@ -111,13 +115,32 @@ function applyMoveLeftOrRight(circle) {
   return c;
 }
 
+function applyMoveUpOrDown(circle) {
+  if (circle.dy === undefined) return circle;
+  const c = clone(circle);
+  if (isInRange(c.y + c.dy, c.yRange)) {
+    c.y += c.dy;
+  } else {
+    c.angle = 360 - c.angle;
+    const { dy } = getDxDy(c.angle, c.speed);
+    c.dy = dy;
+  }
+  return c;
+}
+
 const applyStyle = filter => style => circles => {
   return circles.map((circle, index) =>
     filter(circle, circles, index) ? style(circle, circles, index) : circle
   );
 }
 
+const applyMoveFreely = compose(
+  applyMoveLeftOrRight,
+  applyMoveUpOrDown
+);
+
 const moveLeftOrRight = applyStyle(isCircle)(applyMoveLeftOrRight);
+const moveFreely = applyStyle(isBall)(applyMoveFreely);
 
 function drawCircle(ctx, circle) {
   ctx.beginPath();
@@ -152,15 +175,63 @@ const drawCircles = ctx => circles => {
       drawCircle(ctx, circle);
       drawDirectionLine(ctx, circle);
     }
+    if (isBall(circle)) {
+      drawCircle(ctx, circle);
+    }
   });
   return circles;
+}
+
+function findBall(objs) {
+  return objs.find(item => {
+    return isBall(item);
+  });
+}
+
+function findCircle(objs) {
+  return objs.find(item => {
+    return isCircle(item);
+  });
+}
+
+
+function createBall(circle) {
+  const ball = clone(circle);
+  ball.type = 'ball';
+  ball.angle = circle.testAngle;
+  ball.testAngle = 0;
+  ball.fillStyle = 'red';
+  ball.radius = 6;
+  const { dx, dy } = getDxDy(ball.angle, ball.speed);
+  ball.dx = dx;
+  ball.dy = dy;
+  return ball;
+}
+
+const UP = 38;
+
+function addBall(objs) {
+  if (global.keys.length === 0) {
+    return objs;
+  }
+
+  if (global.keys.shift() === UP) {
+    const c = findCircle(objs);
+    if (c) {
+      c.id = objs.length;
+      objs.push(createBall(c));
+    }
+  }
+  return objs;
 }
 
 function startAnimation(ctx) {
   let objs = [];
   objs.push(createCircle());
   const update = compose(
-    moveLeftOrRight
+    moveLeftOrRight,
+    moveFreely,
+    addBall
   );
   const draw = compose(
     drawCircles(ctx)
@@ -194,4 +265,15 @@ function activate() {
   }, 1000);
 }
 
+const global   = {};
+global.mouse   = {};
+global.keys    = [];
+
+function processKeyEvent(e) {
+  global.keys.push(e.keyCode);
+  const letterPressed = String.fromCharCode(e.keyCode);
+  console.log(e.keyCode, letterPressed.toLowerCase());
+}
+
 window.addEventListener('load', activate);
+window.addEventListener('keydown', processKeyEvent, true);
