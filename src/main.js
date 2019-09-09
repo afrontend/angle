@@ -35,10 +35,9 @@ function getDxDy(angle, speed) {
 function createCircle() {
   const type = 'circle';
   const id = 100;
-  // const radius = getRandomArbitrary(5, 100);
   const radius = 20;
-  const x = getRandomX(radius);
-  const y = getRandomY(radius);
+  const x = window.innerWidth / 2;
+  const y = 100;
   const nextX = x;
   const nextY = y;
   const testAngle = 270;
@@ -100,7 +99,7 @@ function getNextTestAngle(angle, currentTestAngle) {
   }
 }
 
-function applyMoveLeftOrRight(circle) {
+function applyLeftOrRight(circle) {
   if (circle.dx === undefined) return circle;
   const c = clone(circle);
   if (isInRange(c.x + c.dx, c.xRange)) {
@@ -115,7 +114,7 @@ function applyMoveLeftOrRight(circle) {
   return c;
 }
 
-function applyMoveUpOrDown(circle) {
+function applyUpOrDown(circle) {
   if (circle.dy === undefined) return circle;
   const c = clone(circle);
   if (isInRange(c.y + c.dy, c.yRange)) {
@@ -128,19 +127,44 @@ function applyMoveUpOrDown(circle) {
   return c;
 }
 
+function applyKeyCircle(circle) {
+  if (global.keys.length === 0) {
+    return circle;
+  }
+  const key = global.keys[0];
+  if (key === LEFT || key === RIGHT) {
+    global.keys.shift();
+    const c = clone(circle);
+    if (isInRange(c.x + c.dx, c.xRange)) {
+      if (key === RIGHT) {
+        c.angle = 0;
+      } else {
+        c.angle = 180;
+      }
+      const { dx } = getDxDy(c.angle, c.speed);
+      c.dx = dx;
+      c.x += c.dx;
+    }
+    c.testAngle = getNextTestAngle(c.angle, c.testAngle)
+    return c;
+  }
+  return circle
+}
+
 const applyStyle = filter => style => circles => {
   return circles.map((circle, index) =>
     filter(circle, circles, index) ? style(circle, circles, index) : circle
   );
 }
 
-const applyMoveFreely = compose(
-  applyMoveLeftOrRight,
-  applyMoveUpOrDown
+const applyFreely = compose(
+  applyLeftOrRight,
+  applyUpOrDown
 );
 
-const moveLeftOrRight = applyStyle(isCircle)(applyMoveLeftOrRight);
-const moveFreely = applyStyle(isBall)(applyMoveFreely);
+const moveLeftOrRight = applyStyle(isCircle)(applyLeftOrRight);
+const moveBall = applyStyle(isBall)(applyFreely);
+const moveCircle = applyStyle(isCircle)(applyKeyCircle);
 
 function drawCircle(ctx, circle) {
   ctx.beginPath();
@@ -209,6 +233,8 @@ function createBall(circle) {
   return ball;
 }
 
+const LEFT = 37;
+const RIGHT = 39;
 const UP = 38;
 
 function addBall(objs) {
@@ -216,7 +242,8 @@ function addBall(objs) {
     return objs;
   }
 
-  if (global.keys.shift() === UP) {
+  if (global.keys[0] === UP) {
+    global.keys.shift();
     const c = findCircle(objs);
     if (c) {
       c.id = objs.length;
@@ -230,9 +257,9 @@ function startAnimation(ctx) {
   let objs = [];
   objs.push(createCircle());
   const update = compose(
-    moveLeftOrRight,
-    moveFreely,
-    addBall
+    addBall,
+    moveBall,
+    moveCircle
   );
   const draw = compose(
     drawCircles(ctx)
