@@ -35,7 +35,7 @@ function getDxDy(angle, speed) {
 function createCircle() {
   const type = 'circle';
   const id = 100;
-  const radius = 20;
+  const radius = 40;
   const x = window.innerWidth / 2;
   const y = 100;
   const nextX = x;
@@ -135,16 +135,19 @@ function applyKeyCircle(circle) {
   if (key === LEFT || key === RIGHT) {
     global.keys.shift();
     const c = clone(circle);
+
+    if (key === RIGHT) {
+      c.angle = 0;
+    } else {
+      c.angle = 180;
+    }
+    const { dx } = getDxDy(c.angle, c.speed);
+    c.dx = dx;
+
     if (isInRange(c.x + c.dx, c.xRange)) {
-      if (key === RIGHT) {
-        c.angle = 0;
-      } else {
-        c.angle = 180;
-      }
-      const { dx } = getDxDy(c.angle, c.speed);
-      c.dx = dx;
       c.x += c.dx;
     }
+
     c.testAngle = getNextTestAngle(c.angle, c.testAngle)
     return c;
   }
@@ -226,6 +229,8 @@ function createBall(circle) {
   ball.testAngle = 0;
   ball.fillStyle = 'red';
   ball.radius = 6;
+  ball.xRange = getXRange(ball.radius);
+  ball.yRange = getYRange(ball.radius);
   ball.speed = ball.speed * 2;
   const { dx, dy } = getDxDy(ball.angle, ball.speed);
   ball.dx = dx;
@@ -244,6 +249,7 @@ function addBall(objs) {
 
   if (global.keys[0] === UP) {
     global.keys.shift();
+    console.log('UP');
     const c = findCircle(objs);
     if (c) {
       c.id = objs.length;
@@ -301,6 +307,7 @@ function processKeyEvent(e) {
   global.keys.push(e.keyCode);
   const letterPressed = String.fromCharCode(e.keyCode);
   console.log(e.keyCode, letterPressed.toLowerCase());
+  console.log(global.keys.length);
 }
 
 window.addEventListener('load', activate);
