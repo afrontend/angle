@@ -202,6 +202,7 @@ function createBall(circle) {
   ball.testAngle = 0;
   ball.fillStyle = 'red';
   ball.radius = 6;
+  ball.speed = ball.speed * 2;
   const { dx, dy } = getDxDy(ball.angle, ball.speed);
   ball.dx = dx;
   ball.dy = dy;
