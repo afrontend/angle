@@ -272,12 +272,13 @@ function startAnimation(ctx) {
     drawCircles(ctx)
   );
   function animate() {
-    requestAnimationFrame(animate);
     objs = update(objs);
     clearScreen(ctx);
     objs = draw(objs);
   }
-  animate();
+  setInterval(function() {
+    animate();
+  }, 50);
 }
 
 function notify(msg) {
