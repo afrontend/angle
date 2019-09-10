@@ -1,3 +1,12 @@
+const GLOBAL   = {};
+GLOBAL.mouse   = {};
+GLOBAL.keys    = [];
+
+const LEFT = 37;
+const RIGHT = 39;
+const UP = 38;
+const validKeys = [LEFT, RIGHT, UP];
+
 function getXRange(min) {
   return { min: min, max: window.innerWidth - min };
 }
@@ -128,12 +137,13 @@ function applyUpOrDown(circle) {
 }
 
 function applyKeyCircle(circle) {
-  if (global.keys.length === 0) {
+  if (GLOBAL.keys.length === 0) {
     return circle;
   }
-  const key = global.keys[0];
+  const key = GLOBAL.keys[0];
   if (key === LEFT || key === RIGHT) {
-    global.keys.shift();
+    console.log(key);
+    GLOBAL.keys.shift();
     const c = clone(circle);
 
     if (key === RIGHT) {
@@ -238,19 +248,15 @@ function createBall(circle) {
   return ball;
 }
 
-const LEFT = 37;
-const RIGHT = 39;
-const UP = 38;
-
-
 function addBall(objs) {
-  if (global.keys.length === 0) {
+  if (GLOBAL.keys.length === 0) {
     return objs;
   }
 
-  if (global.keys[0] === UP) {
-    global.keys.shift();
-    console.log('UP');
+  const key = GLOBAL.keys[0];
+  if (key === UP) {
+    GLOBAL.keys.shift();
+    console.log(key);
     const c = findCircle(objs);
     if (c) {
       c.id = objs.length;
@@ -278,7 +284,7 @@ function startAnimation(ctx) {
   }
   setInterval(function() {
     animate();
-  }, 50);
+  }, 30);
 }
 
 function notify(msg) {
@@ -301,16 +307,10 @@ function activate() {
   }, 1000);
 }
 
-const global   = {};
-global.mouse   = {};
-global.keys    = [];
-
 function processKeyEvent(e) {
-  if ([LEFT, RIGHT, UP].includes(e.keyCode)) {
-    global.keys.push(e.keyCode);
-    console.log(global.keys.length);
-    const letterPressed = String.fromCharCode(e.keyCode);
-    console.log(e.keyCode, letterPressed.toLowerCase());
+  if (validKeys.includes(e.keyCode)) {
+    GLOBAL.keys.push(e.keyCode);
+    console.log(GLOBAL.keys.length);
   }
 }
 
