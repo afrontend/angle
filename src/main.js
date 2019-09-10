@@ -242,6 +242,7 @@ const LEFT = 37;
 const RIGHT = 39;
 const UP = 38;
 
+
 function addBall(objs) {
   if (global.keys.length === 0) {
     return objs;
@@ -304,10 +305,12 @@ global.mouse   = {};
 global.keys    = [];
 
 function processKeyEvent(e) {
-  global.keys.push(e.keyCode);
-  const letterPressed = String.fromCharCode(e.keyCode);
-  console.log(e.keyCode, letterPressed.toLowerCase());
-  console.log(global.keys.length);
+  if ([LEFT, RIGHT, UP].includes(e.keyCode)) {
+    global.keys.push(e.keyCode);
+    console.log(global.keys.length);
+    const letterPressed = String.fromCharCode(e.keyCode);
+    console.log(e.keyCode, letterPressed.toLowerCase());
+  }
 }
 
 window.addEventListener('load', activate);
