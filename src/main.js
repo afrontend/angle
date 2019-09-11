@@ -97,11 +97,15 @@ function isUnderCount(obj) {
   return obj && obj.type === 'ball' && (obj.lifeCount < 300);
 }
 
+function isNail(obj) {
+  return obj && obj.type === 'nail';
+}
+
 function isInRange(value, range) {
   return value ? (value >= range.min && value <= range.max) : false;
 }
 
-function getNextTestAngle(angle, currentTestAngle) {
+function getTestAngle(angle, currentTestAngle) {
   if (angle === 0) {
     const nextTestAngle = currentTestAngle + 1;
     if (nextTestAngle > 358) {
@@ -135,7 +139,7 @@ function applyLeftOrRight(circle) {
     c.dx = dx;
   }
 
-  c.testAngle = getNextTestAngle(c.angle, c.testAngle)
+  c.testAngle = getTestAngle(c.angle, c.testAngle)
   return c;
 }
 
@@ -174,7 +178,7 @@ function applyKeyCircle(circle) {
       c.x += c.dx;
     }
 
-    c.testAngle = getNextTestAngle(c.angle, c.testAngle)
+    c.testAngle = getTestAngle(c.angle, c.testAngle)
     return c;
   }
   return circle
@@ -215,11 +219,22 @@ function applyGravity(circle) {
   return c;
 }
 
-const moveBall = update(isUnderCount)(applyFreely);
+function upNail(nail) {
+  const n = clone(nail);
+    n.y -= nail.speed;
+  return n;
+}
+
+const applyNail = nail => (
+  isInRange(nail.y, getYRange(0)) ? upNail(nail) : {}
+);
+
+const updateBall = update(isUnderCount)(applyFreely);
 const moveLeftOrRight = update(isOverCount)(applyLeftOrRight);
 const gravityBall = update(isOverCount)(applyGravity);
-const moveCircle = update(isCircle)(applyKeyCircle);
+const updateCircle = update(isCircle)(applyKeyCircle);
 const moveSatellite = update(isCircle)(applySatellite);
+const updateNail = update(isNail)(applyNail);
 
 function drawCircle(ctx, circle) {
   ctx.beginPath();
@@ -229,7 +244,7 @@ function drawCircle(ctx, circle) {
   ctx.stroke();
   ctx.fill();
   ctx.beginPath();
-  ctx.fillStyle = circle.fillStyle || "yellow";
+  ctx.fillStyle = circle.fillStyle || "rgba(20, 100, 100, 0.1)";
   ctx.arc(circle.x, circle.y, circle.radius, Math.PI, Math.PI*2, false);
   ctx.fill();
 }
@@ -254,6 +269,19 @@ function drawSatellite(ctx, circle) {
   ctx.strokeStyle = "black";
   ctx.stroke();
   ctx.fill();
+}
+
+
+const drawNail = ctx => {
+  return circles => {
+    circles.forEach(function(item) {
+      if(isNail(item)) {
+        ctx.fillStyle = item.fillStyle;
+        ctx.fillRect(item.x, item.y, item.width, item.height);
+      }
+    });
+    return circles;
+  }
 }
 
 const drawCircles = ctx => circles => {
@@ -317,29 +345,34 @@ function addBall(objs) {
   return objs;
 }
 
-function createPerson(count = 0) {
+function createNail() {
+  const type = 'nail';
   const width = 20;
   const height = 50;
   const x = (window.innerWidth / 2) - (width / 2);
   const y = window.innerHeight - height;
   const fillStyle = 'blue'
   const xRange = getXRange(0);
-  return { x, y, width, height, fillStyle, xRange };
+  const speed = getRandom(8);
+  return { type, x, y, width, height, fillStyle, xRange, speed };
 }
 
 function startAnimation(ctx) {
   let objs = [];
   objs.push(createCircle());
+  objs.push(createNail());
   const update = compose(
     addBall,
-    moveBall,
+    updateBall,
     moveLeftOrRight,
     gravityBall,
-    moveCircle,
-    moveSatellite
+    updateCircle,
+    moveSatellite,
+    updateNail
   );
   const draw = compose(
-    drawCircles(ctx)
+    drawCircles(ctx),
+    drawNail(ctx)
   );
   function animate() {
     objs = update(objs);
