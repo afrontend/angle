@@ -228,6 +228,10 @@ function drawCircle(ctx, circle) {
   ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2, false);
   ctx.stroke();
   ctx.fill();
+  ctx.beginPath();
+  ctx.fillStyle = circle.fillStyle || "yellow";
+  ctx.arc(circle.x, circle.y, circle.radius, Math.PI, Math.PI*2, false);
+  ctx.fill();
 }
 
 function drawDirectionLine(ctx, circle) {
