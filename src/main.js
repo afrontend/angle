@@ -6,6 +6,8 @@ const LEFT = 37;
 const RIGHT = 39;
 const UP = 38;
 const validKeys = [LEFT, RIGHT, UP];
+const GRAVITY  = 0.1;
+const FRICTION = 0.7;
 
 function getXRange(min) {
   return { min: min, max: window.innerWidth - min };
@@ -44,7 +46,7 @@ function getDxDy(angle, speed) {
 function createCircle() {
   const type = 'circle';
   const id = 100;
-  const radius = 40;
+  const radius = 50;
   const x = window.innerWidth / 2;
   const y = 100;
   const nextX = x;
@@ -85,6 +87,14 @@ function isCircle(obj) {
 
 function isBall(obj) {
   return obj && obj.type === 'ball';
+}
+
+function isOverCount(obj) {
+  return obj && obj.type === 'ball' && (obj.lifeCount >= 300);
+}
+
+function isUnderCount(obj) {
+  return obj && obj.type === 'ball' && (obj.lifeCount < 300);
 }
 
 function isInRange(value, range) {
@@ -173,31 +183,49 @@ function applyKeyCircle(circle) {
 function applySatellite(circle) {
   const c = clone(circle);
   c.satelliteAngle = getSatelliteAngle(c.satelliteAngle)
-  console.log(c.satelliteAngle);
   return c;
 }
 
-const applyStyle = filter => style => circles => {
+const update = filter => style => circles => {
   return circles.map((circle, index) =>
     filter(circle, circles, index) ? style(circle, circles, index) : circle
   );
 }
 
+function incrementLifeCount(circle) {
+  const c = clone(circle);
+  c.lifeCount += 1;
+  return c;
+}
+
 const applyFreely = compose(
+  incrementLifeCount,
   applyLeftOrRight,
   applyUpOrDown
 );
 
-const moveLeftOrRight = applyStyle(isCircle)(applyLeftOrRight);
-const moveBall = applyStyle(isBall)(applyFreely);
-const moveCircle = applyStyle(isCircle)(applyKeyCircle);
-const moveSatellite = applyStyle(isCircle)(applySatellite);
+function applyGravity(circle) {
+  const c = clone(circle);
+  if (!isInRange(c.y + c.dy, c.yRange)) {
+    c.dy = -c.dy * FRICTION;
+  } else {
+    c.dy += GRAVITY;
+  }
+  c.y += c.dy;
+  return c;
+}
+
+const moveBall = update(isUnderCount)(applyFreely);
+const moveLeftOrRight = update(isOverCount)(applyLeftOrRight);
+const gravityBall = update(isOverCount)(applyGravity);
+const moveCircle = update(isCircle)(applyKeyCircle);
+const moveSatellite = update(isCircle)(applySatellite);
 
 function drawCircle(ctx, circle) {
   ctx.beginPath();
-  ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2, false);
   ctx.fillStyle = circle.fillStyle || "rgba(20, 100, 20, 0.1)";
   ctx.strokeStyle = circle.strokeStyle || "black";
+  ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2, false);
   ctx.stroke();
   ctx.fill();
 }
@@ -260,6 +288,7 @@ function createBall(circle) {
   ball.xRange = getXRange(ball.radius);
   ball.yRange = getYRange(ball.radius);
   ball.speed = ball.speed * 2;
+  ball.lifeCount = 0;
   const { dx, dy } = getDxDy(ball.angle, ball.speed);
   ball.dx = dx;
   ball.dy = dy;
@@ -300,6 +329,8 @@ function startAnimation(ctx) {
   const update = compose(
     addBall,
     moveBall,
+    moveLeftOrRight,
+    gravityBall,
     moveCircle,
     moveSatellite
   );
