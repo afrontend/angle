@@ -55,7 +55,8 @@ function createCircle() {
   const { dx, dy } = getDxDy(angle, speed);
   const xRange = getXRange(radius);
   const yRange = getYRange(radius);
-  return { type, id, radius, x, y, angle, testAngle, speed, dx, dy, xRange, yRange };
+  const satelliteAngle = 0;
+  return { type, id, radius, x, y, angle, testAngle, speed, dx, dy, xRange, yRange, satelliteAngle };
 }
 
 function clone(obj) {
@@ -106,6 +107,11 @@ function getNextTestAngle(angle, currentTestAngle) {
       return nextTestAngle;
     }
   }
+}
+
+function getSatelliteAngle(currentAngle) {
+  const nextAngle = currentAngle + 10;
+  return nextAngle >= 360 ? 0 : nextAngle;
 }
 
 function applyLeftOrRight(circle) {
@@ -164,6 +170,13 @@ function applyKeyCircle(circle) {
   return circle
 }
 
+function applySatellite(circle) {
+  const c = clone(circle);
+  c.satelliteAngle = getSatelliteAngle(c.satelliteAngle)
+  console.log(c.satelliteAngle);
+  return c;
+}
+
 const applyStyle = filter => style => circles => {
   return circles.map((circle, index) =>
     filter(circle, circles, index) ? style(circle, circles, index) : circle
@@ -178,20 +191,13 @@ const applyFreely = compose(
 const moveLeftOrRight = applyStyle(isCircle)(applyLeftOrRight);
 const moveBall = applyStyle(isBall)(applyFreely);
 const moveCircle = applyStyle(isCircle)(applyKeyCircle);
+const moveSatellite = applyStyle(isCircle)(applySatellite);
 
 function drawCircle(ctx, circle) {
   ctx.beginPath();
   ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2, false);
-  if (circle.fillStyle) {
-    ctx.fillStyle = circle.fillStyle;
-  } else {
-    ctx.fillStyle = "rgba(20, 100, 20, 0.1)"
-  }
-  if (circle.strokeStyle) {
-    ctx.strokeStyle = circle.strokeStyle;
-  } else {
-    ctx.strokeStyle = "black";
-  }
+  ctx.fillStyle = circle.fillStyle || "rgba(20, 100, 20, 0.1)";
+  ctx.strokeStyle = circle.strokeStyle || "black";
   ctx.stroke();
   ctx.fill();
 }
@@ -206,11 +212,24 @@ function drawDirectionLine(ctx, circle) {
   ctx.stroke();
 }
 
+function drawSatellite(ctx, circle) {
+  ctx.beginPath();
+  const { dx, dy } = getDxDy(circle.satelliteAngle, circle.radius);
+  const x = circle.x + dx;
+  const y = circle.y + dy;
+  ctx.arc(x, y, circle.radius/10, 0, Math.PI*2, false);
+  ctx.fillStyle = "brown"
+  ctx.strokeStyle = "black";
+  ctx.stroke();
+  ctx.fill();
+}
+
 const drawCircles = ctx => circles => {
   circles.forEach(function(circle) {
     if (isCircle(circle)) {
       drawCircle(ctx, circle);
       drawDirectionLine(ctx, circle);
+      drawSatellite(ctx, circle);
     }
     if (isBall(circle)) {
       drawCircle(ctx, circle);
@@ -230,7 +249,6 @@ function findCircle(objs) {
     return isCircle(item);
   });
 }
-
 
 function createBall(circle) {
   const ball = clone(circle);
@@ -266,13 +284,24 @@ function addBall(objs) {
   return objs;
 }
 
+function createPerson(count = 0) {
+  const width = 20;
+  const height = 50;
+  const x = (window.innerWidth / 2) - (width / 2);
+  const y = window.innerHeight - height;
+  const fillStyle = 'blue'
+  const xRange = getXRange(0);
+  return { x, y, width, height, fillStyle, xRange };
+}
+
 function startAnimation(ctx) {
   let objs = [];
   objs.push(createCircle());
   const update = compose(
     addBall,
     moveBall,
-    moveCircle
+    moveCircle,
+    moveSatellite
   );
   const draw = compose(
     drawCircles(ctx)
