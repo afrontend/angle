@@ -350,10 +350,10 @@ const checkCollisionBlock = objs => {
     if (isBlock(obj)) {
       const collision = balls.some(ball => isOverlap(ball, obj));
       if (collision) {
-        obj.fillStyle = 'yellow';
+        obj.fillStyle = '#80FF83';
         return downBlock(obj);
       } else {
-        obj.fillStyle = 'blue';
+        obj.fillStyle = '#36B339';
         return obj;
       }
     } else {
@@ -385,18 +385,18 @@ function drawDirectionLine(ctx, circle) {
   ctx.stroke();
 }
 
+
 function drawSatellite(ctx, circle) {
   ctx.beginPath();
   const { dx, dy } = getDxDy(circle.satelliteAngle, circle.radius);
   const x = circle.x + dx;
   const y = circle.y + dy;
   ctx.arc(x, y, circle.radius/10, 0, Math.PI*2, false);
-  ctx.fillStyle = "brown"
+  ctx.fillStyle = "#FF98C6"
   ctx.strokeStyle = "black";
   ctx.stroke();
   ctx.fill();
 }
-
 
 const drawBlock = ctx => {
   return circles => {
@@ -441,7 +441,7 @@ function createBall(circle) {
   ball.type = 'ball';
   ball.angle = circle.testAngle;
   ball.testAngle = 0;
-  ball.fillStyle = 'red';
+  ball.fillStyle = '#B32464';
   ball.radius = 6;
   ball.xRange = getXRange(ball.radius);
   ball.yRange = getYRange(ball.radius);
