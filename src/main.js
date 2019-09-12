@@ -1,6 +1,7 @@
 const GLOBAL   = {};
 GLOBAL.mouse   = {};
 GLOBAL.keys    = [];
+GLOBAL.timer   = null;
 
 const LEFT = 37;
 const RIGHT = 39;
@@ -114,6 +115,16 @@ function isBottom(obj) {
     }
   } else {
     if (obj.y >= window.innerHeight) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+function isTop(obj) {
+  if (isBlock(obj)) {
+    if (obj.y <= 0) {
       return true;
     } else {
       return false;
@@ -247,8 +258,8 @@ function upBlock(block) {
 
 function downBlock(block) {
   const b = clone(block);
-  b.height -= 5;
-  b.y += 5;
+  b.height -= 10;
+  b.y += 10;
   return b;
 }
 
@@ -260,7 +271,7 @@ function countDown(obj) {
   if (!obj) return obj;
   const aObj = clone(obj);
   if (aObj.timeoutCount === undefined) {
-    aObj.timeoutCount = 10;
+    aObj.timeoutCount = 5;
   }
   aObj.timeoutCount--;
   if (aObj.timeoutCount === 0) {
@@ -271,10 +282,17 @@ function countDown(obj) {
   }
 }
 
+function pauseBlock(obj) {
+  clearTimeout(GLOBAL.timer);
+  return obj;
+}
+
 const checkBottom = obj => isBottom(obj) ? countDown(obj) : obj;
+const checkTop = obj => isTop(obj) ? pauseBlock(obj) : obj;
 
 const checkBallOnTheBottom = update(isBall)(checkBottom);
 const checkBlockOnTheBottom = update(isBlock)(checkBottom);
+const checkBlockOnTheTop = update(isBlock)(checkTop);
 const updateBall = update(isUnderCount)(applyFreely);
 const moveLeftOrRight = update(isOverCount)(applyLeftOrRight);
 const gravityBall = update(isOverCount)(applyGravity);
@@ -332,7 +350,7 @@ const checkCollisionBlock = objs => {
     if (isBlock(obj)) {
       const collision = balls.some(ball => isOverlap(ball, obj));
       if (collision) {
-        obj.fillStyle = 'red';
+        obj.fillStyle = 'yellow';
         return downBlock(obj);
       } else {
         obj.fillStyle = 'blue';
@@ -353,7 +371,7 @@ function drawCircle(ctx, circle) {
   ctx.fill();
   ctx.beginPath();
   ctx.fillStyle = circle.fillStyle || "rgba(20, 100, 100, 0.1)";
-  ctx.arc(circle.x, circle.y, circle.radius, Math.PI, Math.PI*2, false);
+  ctx.arc(circle.x, circle.y, circle.radius, getRadians(180 + 90 + circle.testAngle), getRadians(180 + 270 + circle.testAngle), false);
   ctx.fill();
 }
 
@@ -427,7 +445,7 @@ function createBall(circle) {
   ball.radius = 6;
   ball.xRange = getXRange(ball.radius);
   ball.yRange = getYRange(ball.radius);
-  ball.speed = ball.speed * 2;
+  // ball.speed = ball.speed * 2;
   ball.lifeCount = 0;
   const { dx, dy } = getDxDy(ball.angle, ball.speed);
   ball.dx = dx;
@@ -479,17 +497,17 @@ function createBlocks(barLen) {
 
 const addBlock = (function () {
   let count = 0;
-  let step = 1;
+  let step = 0;
   return function (objs) {
     const block = findBlock(objs);
     if (block) {
       count = 0;
     } else {
       count++;
-      if (count > 100) {
+      if (count > 50) {
         count = 0;
-        console.log("fired");
-        return objs.concat(createBlocks(step++));
+        step++;
+        return objs.concat(createBlocks(step));
       }
     }
     return objs;
@@ -504,6 +522,7 @@ function startAnimation(ctx) {
     updateSatellite,
     checkBallOnTheBottom,
     checkBlockOnTheBottom,
+    checkBlockOnTheTop,
     addBall,
     updateBall,
     checkCollisionBall,
@@ -523,25 +542,22 @@ function startAnimation(ctx) {
     clearScreen(ctx);
     objs = draw(objs);
   }
-  setInterval(function() {
+  GLOBAL.timer = setInterval(function() {
     animate();
   }, 30);
 }
 
 function activate() {
-  setTimeout(function() {
-    const c = document.querySelector("canvas");
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
-    const ctx = c.getContext("2d");
-    startAnimation(ctx);
-  }, 1000);
+  const c = document.querySelector("canvas");
+  c.width = window.innerWidth;
+  c.height = window.innerHeight;
+  const ctx = c.getContext("2d");
+  startAnimation(ctx);
 }
 
 function processKeyEvent(e) {
   if (validKeys.includes(e.keyCode)) {
     GLOBAL.keys.push(e.keyCode);
-    console.log(GLOBAL.keys.length);
   }
 }
 
