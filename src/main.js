@@ -190,16 +190,16 @@ function applySatellite(circle) {
   return c;
 }
 
-const update = filter => style => circles => {
-  return circles.map((circle, index) =>
-    filter(circle, circles, index) ? style(circle, circles, index) : circle
+const update = filter => style => objs => {
+  return objs.map((obj, index) =>
+    filter(obj, objs, index) ? style(obj, objs, index) : obj
   );
 }
 
-function incrementLifeCount(circle) {
-  const c = clone(circle);
-  c.lifeCount += 1;
-  return c;
+function incrementLifeCount(obj) {
+  const o = clone(obj);
+  o.lifeCount += 1;
+  return o;
 }
 
 const applyFreely = compose(
