@@ -97,8 +97,8 @@ function isUnderCount(obj) {
   return obj && obj.type === 'ball' && (obj.lifeCount < 300);
 }
 
-function isNail(obj) {
-  return obj && obj.type === 'nail';
+function isBlock(obj) {
+  return obj && obj.type === 'block';
 }
 
 function isInRange(value, range) {
@@ -219,14 +219,15 @@ function applyGravity(circle) {
   return c;
 }
 
-function upNail(nail) {
-  const n = clone(nail);
-    n.y -= nail.speed;
-  return n;
+function upBlock(block) {
+  const b = clone(block);
+  b.height += b.speed;
+  b.y = window.innerHeight - b.height;
+  return b;
 }
 
-const applyNail = nail => (
-  isInRange(nail.y, getYRange(0)) ? upNail(nail) : {}
+const applyBlock = block => (
+  isInRange(block.y, getYRange(0)) ? upBlock(block) : {}
 );
 
 const updateBall = update(isUnderCount)(applyFreely);
@@ -234,7 +235,7 @@ const moveLeftOrRight = update(isOverCount)(applyLeftOrRight);
 const gravityBall = update(isOverCount)(applyGravity);
 const updateCircle = update(isCircle)(applyKeyCircle);
 const moveSatellite = update(isCircle)(applySatellite);
-const updateNail = update(isNail)(applyNail);
+const updateBlock = update(isBlock)(applyBlock);
 
 function drawCircle(ctx, circle) {
   ctx.beginPath();
@@ -272,10 +273,10 @@ function drawSatellite(ctx, circle) {
 }
 
 
-const drawNail = ctx => {
+const drawBlock = ctx => {
   return circles => {
     circles.forEach(function(item) {
-      if(isNail(item)) {
+      if(isBlock(item)) {
         ctx.fillStyle = item.fillStyle;
         ctx.fillRect(item.x, item.y, item.width, item.height);
       }
@@ -345,11 +346,11 @@ function addBall(objs) {
   return objs;
 }
 
-function createNail() {
-  const type = 'nail';
-  const width = 20;
+function createBlock() {
+  const type = 'block';
+  const width = window.innerWidth / 2;
   const height = 50;
-  const x = (window.innerWidth / 2) - (width / 2);
+  const x = window.innerWidth / 2;
   const y = window.innerHeight - height;
   const fillStyle = 'blue'
   const xRange = getXRange(0);
@@ -360,7 +361,7 @@ function createNail() {
 function startAnimation(ctx) {
   let objs = [];
   objs.push(createCircle());
-  objs.push(createNail());
+  objs.push(createBlock());
   const update = compose(
     addBall,
     updateBall,
@@ -368,11 +369,11 @@ function startAnimation(ctx) {
     gravityBall,
     updateCircle,
     moveSatellite,
-    updateNail
+    updateBlock
   );
   const draw = compose(
     drawCircles(ctx),
-    drawNail(ctx)
+    drawBlock(ctx)
   );
   function animate() {
     objs = update(objs);
