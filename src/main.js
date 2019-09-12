@@ -528,17 +528,7 @@ function startAnimation(ctx) {
   }, 30);
 }
 
-function notify(msg) {
-  const m = document.querySelectorAll(".message")[0];
-  m.innerHTML = msg;
-  m.className = 'message';
-  setTimeout(function() {
-    m.className = 'message hide';
-  }, 1000);
-}
-
 function activate() {
-  notify('Angle');
   setTimeout(function() {
     const c = document.querySelector("canvas");
     c.width = window.innerWidth;
