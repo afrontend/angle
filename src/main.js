@@ -247,8 +247,8 @@ function upBlock(block) {
 
 function downBlock(block) {
   const b = clone(block);
-  b.height -= (b.speed*3);
-  b.y += (b.speed*3);
+  b.height -= (b.speed*4);
+  b.y += (b.speed*4);
   return b;
 }
 
@@ -279,7 +279,7 @@ const updateBall = update(isUnderCount)(applyFreely);
 const moveLeftOrRight = update(isOverCount)(applyLeftOrRight);
 const gravityBall = update(isOverCount)(applyGravity);
 const updateCircle = update(isCircle)(applyKeyCircle);
-const moveSatellite = update(isCircle)(applySatellite);
+const updateSatellite = update(isCircle)(applySatellite);
 const updateBlock = update(isBlock)(applyBlock);
 const removeNoneType = (objs) => {
   return objs.filter(obj => (obj.type !== 'none'));
@@ -452,22 +452,29 @@ function addBall(objs) {
   return objs;
 }
 
-function createBlock() {
-  const type = 'block';
-  const width = window.innerWidth / 2;
-  const height = 50;
-  const x = window.innerWidth / 2;
-  const y = window.innerHeight - height;
-  const fillStyle = 'blue'
-  const xRange = getXRange(0);
-  const speed = getRandom(8);
-  return { type, x, y, width, height, fillStyle, xRange, speed };
-}
-
 function findBlock(objs) {
   return objs.find(obj => {
     return isBlock(obj);
   });
+}
+
+function createBlock(x, width) {
+  const type = 'block';
+  const height = 50;
+  const y = window.innerHeight - height;
+  const fillStyle = 'blue'
+  const xRange = getXRange(0);
+  const speed = getRandomArbitrary(1, 2);
+  return { type, x, y, width, height, fillStyle, xRange, speed };
+}
+
+function createBlocks(barLen) {
+  const blocks = [];
+  const width = window.innerWidth / barLen;
+  for (let i = 0; i < barLen; i++) {
+    blocks.push(createBlock(width * i, width));
+  }
+  return blocks;
 }
 
 const addBlock = (function () {
@@ -480,7 +487,9 @@ const addBlock = (function () {
     } else {
       count++;
       if (count > 100) {
-        objs.push(createBlock());
+        count = 0;
+        console.log("fired");
+        return objs.concat(createBlocks(step++));
       }
     }
     return objs;
@@ -491,18 +500,18 @@ function startAnimation(ctx) {
   let objs = [];
   objs.push(createCircle());
   const update = compose(
+    updateCircle,
+    updateSatellite,
     checkBallOnTheBottom,
     checkBlockOnTheBottom,
-    checkCollisionBall,
-    checkCollisionBlock,
     addBall,
     updateBall,
+    checkCollisionBall,
     addBlock,
+    updateBlock,
+    checkCollisionBlock,
     moveLeftOrRight,
     gravityBall,
-    updateCircle,
-    moveSatellite,
-    updateBlock,
     removeNoneType
   );
   const draw = compose(
