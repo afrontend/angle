@@ -101,6 +101,10 @@ function isBlock(obj) {
   return obj && obj.type === 'block';
 }
 
+function isNone(obj) {
+  return obj && obj.type === 'none';
+}
+
 function isInRange(value, range) {
   return value ? (value >= range.min && value <= range.max) : false;
 }
@@ -222,7 +226,14 @@ function applyGravity(circle) {
 function upBlock(block) {
   const b = clone(block);
   b.height += b.speed;
-  b.y = window.innerHeight - b.height;
+  b.y -= b.speed;
+  return b;
+}
+
+function downBlock(block) {
+  const b = clone(block);
+  b.height -= (b.speed*2);
+  b.y += (b.speed*2);
   return b;
 }
 
@@ -236,6 +247,70 @@ const gravityBall = update(isOverCount)(applyGravity);
 const updateCircle = update(isCircle)(applyKeyCircle);
 const moveSatellite = update(isCircle)(applySatellite);
 const updateBlock = update(isBlock)(applyBlock);
+const removeNoneType = (objs) => {
+  return objs.filter(obj => (obj.type !== 'none'));
+}
+
+const widenBlock = (block, size) => {
+  const b = clone(block);
+  b.x = b.x - size;
+  b.y = b.y - size;
+  b.width = b.width + size;
+  b.height = b.height + size;
+  return b;
+}
+
+function isOverlap(ball, block) {
+  if (isBall(ball) && isBlock(block)) {
+    const wBlock = widenBlock(block, ball.radius);
+  console.log("isOverlap", wBlock)
+    console.log(wBlock);
+    if (
+      ball.x >= wBlock.x &&
+      ball.x <= wBlock.x + wBlock.width &&
+      ball.y >= wBlock.y &&
+      ball.y <= wBlock.y + wBlock.height
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const checkCollisionBall = objs => {
+  const blocks = objs.filter(item => isBlock(item));
+  return objs.map(obj => {
+    if (isBall(obj)) {
+      const collision = blocks.some(block => isOverlap(obj, block));
+      if (collision) {
+        obj.type = "none";
+        return obj;
+      } else {
+        return obj;
+      }
+    } else {
+      return obj;
+    }
+  });
+}
+
+const checkCollisionBlock = objs => {
+  const balls = objs.filter(item => isBall(item));
+  return objs.map(obj => {
+    if (isBlock(obj)) {
+      const collision = balls.some(ball => isOverlap(ball, obj));
+      if (collision) {
+        obj.fillStyle = 'red';
+        return downBlock(obj);
+      } else {
+        obj.fillStyle = 'blue';
+        return obj;
+      }
+    } else {
+      return obj;
+    }
+  });
+}
 
 function drawCircle(ctx, circle) {
   ctx.beginPath();
@@ -363,13 +438,16 @@ function startAnimation(ctx) {
   objs.push(createCircle());
   objs.push(createBlock());
   const update = compose(
+    checkCollisionBall,
+    checkCollisionBlock,
     addBall,
     updateBall,
     moveLeftOrRight,
     gravityBall,
     updateCircle,
     moveSatellite,
-    updateBlock
+    updateBlock,
+    removeNoneType
   );
   const draw = compose(
     drawCircles(ctx),
