@@ -445,7 +445,7 @@ function createBall(circle) {
   ball.radius = 6;
   ball.xRange = getXRange(ball.radius);
   ball.yRange = getYRange(ball.radius);
-  // ball.speed = ball.speed * 2;
+  ball.speed = ball.speed * 1.5;
   ball.lifeCount = 0;
   const { dx, dy } = getDxDy(ball.angle, ball.speed);
   ball.dx = dx;
