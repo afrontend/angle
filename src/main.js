@@ -105,11 +105,19 @@ function isNone(obj) {
   return obj && obj.type === 'none';
 }
 
-function isBottom(item) {
-  if ((item.y + item.radius) >= window.innerHeight) {
-    return true;
+function isBottom(obj) {
+  if (isBall(obj)) {
+    if ((obj.y + obj.radius) >= window.innerHeight) {
+      return true;
+    } else {
+      return false;
+    }
   } else {
-    return false;
+    if (obj.y >= window.innerHeight) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
@@ -265,7 +273,8 @@ function countDown(obj) {
 
 const checkBottom = obj => isBottom(obj) ? countDown(obj) : obj;
 
-const checkObjOnTheBottom = update(isBall)(checkBottom);
+const checkBallOnTheBottom = update(isBall)(checkBottom);
+const checkBlockOnTheBottom = update(isBlock)(checkBottom);
 const updateBall = update(isUnderCount)(applyFreely);
 const moveLeftOrRight = update(isOverCount)(applyLeftOrRight);
 const gravityBall = update(isOverCount)(applyGravity);
@@ -455,16 +464,40 @@ function createBlock() {
   return { type, x, y, width, height, fillStyle, xRange, speed };
 }
 
+function findBlock(objs) {
+  return objs.find(obj => {
+    return isBlock(obj);
+  });
+}
+
+const addBlock = (function () {
+  let count = 0;
+  let step = 1;
+  return function (objs) {
+    const block = findBlock(objs);
+    if (block) {
+      count = 0;
+    } else {
+      count++;
+      if (count > 100) {
+        objs.push(createBlock());
+      }
+    }
+    return objs;
+  };
+})();
+
 function startAnimation(ctx) {
   let objs = [];
   objs.push(createCircle());
-  objs.push(createBlock());
   const update = compose(
-    checkObjOnTheBottom,
+    checkBallOnTheBottom,
+    checkBlockOnTheBottom,
     checkCollisionBall,
     checkCollisionBlock,
     addBall,
     updateBall,
+    addBlock,
     moveLeftOrRight,
     gravityBall,
     updateCircle,
