@@ -247,8 +247,8 @@ function upBlock(block) {
 
 function downBlock(block) {
   const b = clone(block);
-  b.height -= (b.speed*4);
-  b.y += (b.speed*4);
+  b.height -= 5;
+  b.y += 5;
   return b;
 }
 
