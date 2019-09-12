@@ -105,6 +105,14 @@ function isNone(obj) {
   return obj && obj.type === 'none';
 }
 
+function isBottom(item) {
+  if ((item.y + item.radius) >= window.innerHeight) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 function isInRange(value, range) {
   return value ? (value >= range.min && value <= range.max) : false;
 }
@@ -166,7 +174,6 @@ function applyKeyCircle(circle) {
   }
   const key = GLOBAL.keys[0];
   if (key === LEFT || key === RIGHT) {
-    console.log(key);
     GLOBAL.keys.shift();
     const c = clone(circle);
 
@@ -232,8 +239,8 @@ function upBlock(block) {
 
 function downBlock(block) {
   const b = clone(block);
-  b.height -= (b.speed*2);
-  b.y += (b.speed*2);
+  b.height -= (b.speed*3);
+  b.y += (b.speed*3);
   return b;
 }
 
@@ -241,6 +248,24 @@ const applyBlock = block => (
   isInRange(block.y, getYRange(0)) ? upBlock(block) : {}
 );
 
+function countDown(obj) {
+  if (!obj) return obj;
+  const aObj = clone(obj);
+  if (aObj.timeoutCount === undefined) {
+    aObj.timeoutCount = 10;
+  }
+  aObj.timeoutCount--;
+  if (aObj.timeoutCount === 0) {
+    aObj.type = 'none';
+    return aObj;
+  } else {
+    return aObj;
+  }
+}
+
+const checkBottom = obj => isBottom(obj) ? countDown(obj) : obj;
+
+const checkObjOnTheBottom = update(isBall)(checkBottom);
 const updateBall = update(isUnderCount)(applyFreely);
 const moveLeftOrRight = update(isOverCount)(applyLeftOrRight);
 const gravityBall = update(isOverCount)(applyGravity);
@@ -263,8 +288,6 @@ const widenBlock = (block, size) => {
 function isOverlap(ball, block) {
   if (isBall(ball) && isBlock(block)) {
     const wBlock = widenBlock(block, ball.radius);
-  console.log("isOverlap", wBlock)
-    console.log(wBlock);
     if (
       ball.x >= wBlock.x &&
       ball.x <= wBlock.x + wBlock.width &&
@@ -411,7 +434,6 @@ function addBall(objs) {
   const key = GLOBAL.keys[0];
   if (key === UP) {
     GLOBAL.keys.shift();
-    console.log(key);
     const c = findCircle(objs);
     if (c) {
       c.id = objs.length;
@@ -438,6 +460,7 @@ function startAnimation(ctx) {
   objs.push(createCircle());
   objs.push(createBlock());
   const update = compose(
+    checkObjOnTheBottom,
     checkCollisionBall,
     checkCollisionBlock,
     addBall,
