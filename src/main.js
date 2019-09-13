@@ -366,7 +366,7 @@ function drawCircle(ctx, circle) {
   ctx.beginPath();
   ctx.fillStyle = circle.fillStyle || "rgba(20, 100, 20, 0.1)";
   ctx.strokeStyle = circle.strokeStyle || "black";
-  ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2, false);
+  ctx.arc(circle.x, circle.y, circle.radius, getRadians(0), getRadians(360), false);
   ctx.stroke();
   ctx.fill();
   ctx.beginPath();
@@ -391,7 +391,7 @@ function drawSatellite(ctx, circle) {
   const { dx, dy } = getDxDy(circle.satelliteAngle, circle.radius);
   const x = circle.x + dx;
   const y = circle.y + dy;
-  ctx.arc(x, y, circle.radius/10, 0, Math.PI*2, false);
+  ctx.arc(x, y, circle.radius/10, getRadians(0), getRadians(360), false);
   ctx.fillStyle = "#FF98C6"
   ctx.strokeStyle = "black";
   ctx.stroke();
