@@ -350,8 +350,11 @@ const checkCollisionBlock = objs => {
     if (isBlock(obj)) {
       const collision = balls.some(ball => isOverlap(ball, obj));
       if (collision) {
+        const collisionBalls = balls.filter(ball => isOverlap(ball, obj));
         obj.fillStyle = '#80FF83';
-        return downBlock(obj);
+        return collisionBalls.reduce(memo => {
+          return downBlock(memo);
+        }, obj);
       } else {
         obj.fillStyle = '#36B339';
         return obj;
