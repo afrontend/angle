@@ -2,11 +2,13 @@ const GLOBAL   = {};
 GLOBAL.mouse   = {};
 GLOBAL.keys    = [];
 GLOBAL.timer   = null;
+GLOBAL.demoTimer   = null;
 
 const LEFT = 37;
 const RIGHT = 39;
 const UP = 38;
-const validKeys = [LEFT, RIGHT, UP];
+const KeyD = 68;
+const validKeys = [LEFT, RIGHT, UP, KeyD];
 const GRAVITY  = 0.1;
 const FRICTION = 0.7;
 
@@ -284,6 +286,7 @@ function countDown(obj) {
 
 function pauseBlock(obj) {
   clearTimeout(GLOBAL.timer);
+  clearTimeout(GLOBAL.demoTimer);
   return obj;
 }
 
@@ -558,10 +561,40 @@ function activate() {
   startAnimation(ctx);
 }
 
+function* getNextKey() {
+  do {
+    for (var i = 0; i < 100; i++) {
+      yield LEFT;
+      yield UP;
+    }
+    for (var i = 0; i < 200; i++) {
+      yield RIGHT;
+      yield UP;
+    }
+    for (var i = 0; i < 100; i++) {
+      yield LEFT;
+      yield UP;
+    }
+  } while (true);
+}
+
+const getDemoKey = getNextKey();
+
+function startDemo() {
+  GLOBAL.demoTimer = setInterval(function() {
+    GLOBAL.keys.push(getDemoKey.next().value);
+  }, 100);
+}
+
 function processKeyEvent(e) {
   if (validKeys.includes(e.keyCode)) {
-    GLOBAL.keys.push(e.keyCode);
+    if (e.keyCode === KeyD) {
+      startDemo();
+    } else {
+      GLOBAL.keys.push(e.keyCode);
+    }
   }
+
 }
 
 window.addEventListener('load', activate);
