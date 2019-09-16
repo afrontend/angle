@@ -2,7 +2,7 @@ const GLOBAL   = {};
 GLOBAL.mouse   = {};
 GLOBAL.keys    = [];
 GLOBAL.timer   = null;
-GLOBAL.demoTimer   = null;
+GLOBAL.demoTimer = null;
 
 const LEFT = 37;
 const RIGHT = 39;
@@ -381,6 +381,13 @@ function drawCircle(ctx, circle) {
   ctx.fill();
 }
 
+function drawHalfCircle(ctx, circle) {
+  ctx.beginPath();
+  ctx.fillStyle = circle.fillStyle || "rgba(20, 100, 100, 0.1)";
+  ctx.arc(circle.x, circle.y, circle.radius, getRadians(180 + 90 + circle.testAngle), getRadians(180 + 270 + circle.testAngle), false);
+  ctx.fill();
+}
+
 function drawDirectionLine(ctx, circle) {
   ctx.beginPath();
   ctx.strokeStyle = 'pink';
@@ -404,7 +411,7 @@ function drawSatellite(ctx, circle) {
   ctx.fill();
 }
 
-const drawBlock = ctx => {
+const drawBlocks = ctx => {
   return circles => {
     circles.forEach(function(item) {
       if(isBlock(item)) {
@@ -420,6 +427,7 @@ const drawCircles = ctx => circles => {
   circles.forEach(function(circle) {
     if (isCircle(circle)) {
       drawCircle(ctx, circle);
+      drawHalfCircle(ctx, circle);
       drawDirectionLine(ctx, circle);
       drawSatellite(ctx, circle);
     }
@@ -541,7 +549,7 @@ function startAnimation(ctx) {
   );
   const draw = compose(
     drawCircles(ctx),
-    drawBlock(ctx)
+    drawBlocks(ctx)
   );
   function animate() {
     objs = update(objs);
@@ -594,7 +602,6 @@ function processKeyEvent(e) {
       GLOBAL.keys.push(e.keyCode);
     }
   }
-
 }
 
 window.addEventListener('load', activate);
