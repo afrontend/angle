@@ -351,9 +351,8 @@ const checkCollisionBlock = objs => {
   const balls = objs.filter(item => isBall(item));
   return objs.map(obj => {
     if (isBlock(obj)) {
-      const collision = balls.some(ball => isOverlap(ball, obj));
-      if (collision) {
-        const collisionBalls = balls.filter(ball => isOverlap(ball, obj));
+      const collisionBalls = balls.filter(ball => isOverlap(ball, obj));
+      if (collisionBalls && collisionBalls.length > 0) {
         obj.fillStyle = '#80FF83';
         return collisionBalls.reduce(memo => {
           return downBlock(memo);
@@ -606,3 +605,4 @@ function processKeyEvent(e) {
 
 window.addEventListener('load', activate);
 window.addEventListener('keydown', processKeyEvent, true);
+
