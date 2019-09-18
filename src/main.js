@@ -517,7 +517,7 @@ const addBlock = (function () {
       count = 0;
     } else {
       count++;
-      if (count > 50) {
+      if (count > 10) {
         count = 0;
         step++;
         return objs.concat(createBlocks(step));
