@@ -189,7 +189,7 @@ function applyUpOrDown(circle) {
   return c;
 }
 
-function applyKeyCircle(circle) {
+function moveCircleWithKey(circle) {
   if (GLOBAL.keys.length === 0) {
     return circle;
   }
@@ -216,7 +216,7 @@ function applyKeyCircle(circle) {
   return circle
 }
 
-function applySatellite(circle) {
+function moveSatellite(circle) {
   const c = clone(circle);
   c.satelliteAngle = getSatelliteAngle(c.satelliteAngle)
   return c;
@@ -265,7 +265,7 @@ function downBlock(block) {
   return b;
 }
 
-const applyBlock = block => (
+const moveBlock = block => (
   isInRange(block.y, getYRange(0)) ? upBlock(block) : {}
 );
 
@@ -299,9 +299,9 @@ const checkBlockOnTheTop = update(isBlock)(checkTop);
 const updateBall = update(isUnderCount)(applyFreely);
 const moveLeftOrRight = update(isOverCount)(applyLeftOrRight);
 const gravityBall = update(isOverCount)(applyGravity);
-const updateCircle = update(isCircle)(applyKeyCircle);
-const updateSatellite = update(isCircle)(applySatellite);
-const updateBlock = update(isBlock)(applyBlock);
+const moveCircles = update(isCircle)(moveCircleWithKey);
+const moveSatellites = update(isCircle)(moveSatellite);
+const moveBlocks = update(isBlock)(moveBlock);
 const removeNoneType = (objs) => {
   return objs.filter(obj => (obj.type !== 'none'));
 }
@@ -531,8 +531,8 @@ function startAnimation(ctx) {
   let objs = [];
   objs.push(createCircle());
   const update = compose(
-    updateCircle,
-    updateSatellite,
+    moveCircles,
+    moveSatellites,
     checkBallOnTheBottom,
     checkBlockOnTheBottom,
     checkBlockOnTheTop,
@@ -540,7 +540,7 @@ function startAnimation(ctx) {
     updateBall,
     checkCollisionBall,
     addBlock,
-    updateBlock,
+    moveBlocks,
     checkCollisionBlock,
     moveLeftOrRight,
     gravityBall,
