@@ -308,10 +308,10 @@ const removeNoneType = (objs) => {
 
 const widenBlock = (block, size) => {
   const b = clone(block);
-  b.x = b.x - size;
-  b.y = b.y - size;
-  b.width = b.width + size;
-  b.height = b.height + size;
+  b.x -= size;
+  b.y -= size;
+  b.width += size;
+  b.height += size;
   return b;
 }
 
