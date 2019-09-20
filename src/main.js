@@ -290,6 +290,25 @@ function pauseBlock(obj) {
   return obj;
 }
 
+function startDemoKey(circles) {
+  if (GLOBAL.keys.length === 0) {
+    return circles;
+  }
+  const key = GLOBAL.keys[0];
+  if (key === KeyD) {
+    GLOBAL.keys.shift();
+    if (GLOBAL.demoTimer) {
+      clearInterval(GLOBAL.demoTimer);
+      GLOBAL.demoTimer = null;
+    } else {
+      GLOBAL.demoTimer = setInterval(function() {
+        GLOBAL.keys.push(getDemoKey.next().value);
+      }, 100);
+    }
+  }
+  return circles;
+}
+
 const checkBottom = obj => isBottom(obj) ? countDown(obj) : obj;
 const checkTop = obj => isTop(obj) ? pauseBlock(obj) : obj;
 
@@ -544,7 +563,8 @@ function startAnimation(ctx) {
     checkCollisionBlock,
     moveLeftOrRight,
     gravityBall,
-    removeNoneType
+    removeNoneType,
+    startDemoKey
   );
   const draw = compose(
     drawCircles(ctx),
@@ -587,19 +607,9 @@ function* getNextKey() {
 
 const getDemoKey = getNextKey();
 
-function startDemo() {
-  GLOBAL.demoTimer = setInterval(function() {
-    GLOBAL.keys.push(getDemoKey.next().value);
-  }, 100);
-}
-
 function processKeyEvent(e) {
   if (validKeys.includes(e.keyCode)) {
-    if (e.keyCode === KeyD) {
-      startDemo();
-    } else {
-      GLOBAL.keys.push(e.keyCode);
-    }
+    GLOBAL.keys.push(e.keyCode);
   }
 }
 
