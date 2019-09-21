@@ -353,16 +353,12 @@ const checkCollisionBall = objs => {
   const blocks = objs.filter(item => isBlock(item));
   return objs.map(obj => {
     if (isBall(obj)) {
-      const collision = blocks.some(block => isOverlap(obj, block));
-      if (collision) {
+      if (blocks.some(block => isOverlap(obj, block))) {
         obj.type = "none";
         return obj;
-      } else {
-        return obj;
       }
-    } else {
-      return obj;
     }
+    return obj;
   });
 }
 
