@@ -395,6 +395,15 @@ function drawCircle(ctx, circle) {
   ctx.fill();
 }
 
+function drawBall(ctx, circle) {
+  ctx.beginPath();
+  ctx.fillStyle = circle.fillStyle || "rgba(20, 100, 20, 0.1)";
+  ctx.strokeStyle = circle.strokeStyle || "black";
+  ctx.arc(circle.x, circle.y, circle.radius, getRadians(0), getRadians(360), false);
+  ctx.stroke();
+  ctx.fill();
+}
+
 function drawHalfCircle(ctx, circle) {
   ctx.beginPath();
   ctx.fillStyle = circle.fillStyle || "rgba(20, 100, 100, 0.1)";
@@ -446,7 +455,7 @@ const drawCircles = ctx => circles => {
       drawSatellite(ctx, circle);
     }
     if (isBall(circle)) {
-      drawCircle(ctx, circle);
+      drawBall(ctx, circle);
     }
   });
   return circles;
