@@ -17,4 +17,4 @@ npm start
 
 ## License
 
-MIT © [Bob Hwang](https://agvim.wordpress.com)
+MIT © [Bob Hwang](https://afrontend.github.io)
